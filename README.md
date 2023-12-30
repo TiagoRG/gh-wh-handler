@@ -19,7 +19,7 @@ make
 
 Run the application using your configuration file:
 ```console
-./gh-wh-handler /path/to/config.json
+./gh_wh_handler /path/to/config.json
 ```
 
 ## Config File
