@@ -42,3 +42,7 @@ The configuration file should be a JSON file with the following format:
     }
 }
 ```
+
+## Endpoint
+
+Currently the only endpoint for the application is /update-files
