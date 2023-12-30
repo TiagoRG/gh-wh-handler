@@ -6,6 +6,11 @@ Currently creating a local copy of remote files on every push
 
 ## Usage
 
+Install the dependencies:
+
+- [CrowCpp](https://crowcpp.org/master/)
+- [nlohmann::json](https://github.com/nlohmann/json)
+
 Compile the application:
 ```console
 cmake .
