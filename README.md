@@ -33,7 +33,7 @@ The configuration file should be a JSON file with the following format:
         "repo_full_name": {
             "branch": "target_branch",
             "files": {
-                "remote_path": "local_path",
+                "remote_path": "local_path"
             }
         }
     },
@@ -45,4 +45,4 @@ The configuration file should be a JSON file with the following format:
 
 ## Endpoint
 
-Currently the only endpoint for the application is /update-files
+Currently, the only endpoint for the application is /update-files

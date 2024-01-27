@@ -3,5 +3,4 @@ CMakeFiles/
 CMakeCache.txt
 Makefile
 cmake_install.cmake
-gh-wh-handler
-config.json
+bin/
