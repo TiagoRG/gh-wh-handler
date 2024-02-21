@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
     int port = config["port"];
     nlohmann::json &repos = config["repos"];
     nlohmann::json &tokens = config["tokens"];
+    nlohmann::json &actions = config["actions"];
 
     // Close config file
     config_file.close();
@@ -50,7 +51,7 @@ int main(int argc, char **argv) {
     // Set up route for updating files
     CROW_ROUTE(app, "/update-files")
         .methods("POST"_method)
-        ([&repos, &tokens](const crow::request &req) {
+        ([&repos, &tokens, &actions](const crow::request &req) {
             nlohmann::json payload;
             try {
                 // Parse JSON payload from the request body, exit if it fails
@@ -178,6 +179,25 @@ int main(int argc, char **argv) {
                     printf("%s %s\n", file_data[1] == "added" ? "Created" : "Updated", path.c_str());
                     response["file_count"] = response["file_count"].get<int>() + 1;
                     response["updated"].push_back(file_path);
+                }
+
+                // Run actions
+                for (auto c_action_list = actions.begin(); c_action_list != actions.end(); ++c_action_list) {
+                    if (const std::string &c_action_repo = c_action_list.key(); c_action_repo != repo) continue;
+                    for (auto &action : c_action_list.value()) {
+                        std::cout << "Executing action: " << action << std::endl;
+                        std::string command = action;
+                        int return_code = std::system(command.c_str());
+                        std::ofstream log_file("/var/log/gh_wh_handler.log", std::ios_base::app);
+                        time_t now = time(0);
+                        if (return_code == 0) {
+                            printf("Successfully executed action: %s\n", command.c_str());
+                            log_file << now << " > Successfully executed action: " << command << std::endl;
+                        } else {
+                            printf("Failed to execute action: %s\n", command.c_str());
+                            log_file << now << " > Failed to execute action: " << command << std::endl;
+                        }
+                    }
                 }
 
                 return crow::response(200, response.dump());
