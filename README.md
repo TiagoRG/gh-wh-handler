@@ -12,7 +12,7 @@ Head over to the [Releases Page](https://github.com/TiagoRG/gh-wh-handler/releas
 
 Run the application using your configuration file:
 ```console
-/path/to/gh_wh_handler_<arch> /path/to/config.json
+/path/to/gh-wh-handler.<arch> /path/to/config.json
 ```
 
 You can see the config file format below.
@@ -24,17 +24,18 @@ Install the dependencies:
 - [CrowCpp](https://crowcpp.org/master/)
 - [nlohmann::json](https://github.com/nlohmann/json)
 
-Compile the application:
+Build the application:
 ```console
-make
+cmake -S . -B build
+cmake --build build
 ```
 
 Run the application using your configuration file:
 ```console
-bin/gh_wh_handler /path/to/config.json
+bin/gh-wh-handler.<arch> /path/to/config.json
 ```
 
-Note: default config file path is `/etc/gh_wh_handler/config.json`
+Note: default config file path is `/etc/gh-wh-handler/config.json`
 
 ## Config File
 
@@ -65,4 +66,4 @@ The configuration file should be a JSON file with the following format:
 
 ## Endpoint
 
-Currently, the only endpoint for the application is /update-files
+Currently, the only endpoint for the application is `/update-files`

@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    std::string config_file_path = argc == 2 ? 1[argv] : "/etc/gh_wh_handler/config.json";
+    std::string config_file_path = argc == 2 ? 1[argv] : "/etc/gh-wh-handler/config.json";
 
     // Open config file, exit if it fails
     std::ifstream config_file(config_file_path);
