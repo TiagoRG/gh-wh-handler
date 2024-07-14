@@ -6,6 +6,19 @@ Currently creating a local copy of remote files on every push
 
 ## Usage
 
+### Run prebuilt binary
+
+Head over to the [Releases Page](https://github.com/TiagoRG/gh-wh-handler/releases) and download the desired binary.
+
+Run the application using your configuration file:
+```console
+/path/to/gh_wh_handler_<arch> /path/to/config.json
+```
+
+You can see the config file format below.
+
+### Run from source
+
 Install the dependencies:
 
 - [CrowCpp](https://crowcpp.org/master/)
@@ -18,7 +31,7 @@ make
 
 Run the application using your configuration file:
 ```console
-./gh_wh_handler /path/to/config.json
+bin/gh_wh_handler /path/to/config.json
 ```
 
 Note: default config file path is `/etc/gh_wh_handler/config.json`
