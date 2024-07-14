@@ -1,2 +1,57 @@
-bin/
+# CMake build directories
+/build*/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/*.cmake
+/*.cbp
+/*.layout
+/*.stackdump
+/CPackConfig.cmake
+/Makefile
+/CTestTestfile.cmake
+
+# Compiled binaries
+/bin/
+/lib/
+/*.so
+/*.dll
+/*.dylib
+
+# Generated files
+/*.a
+/*.lib
+/*.exe
+/*.out
+/*.app
+
+# Visual Studio Code specific
+/.vscode/
+
+# Sublime Text specific
+/*.sublime-workspace
+
+# macOS specific
+/.DS_Store
+
+# JetBrains IDEs specific
+/.idea/
+/fleet/
+
+# Emacs specific
+*~
+
+# Vim specific
+*.swp
+
+# Other editor and tool specific files
+*.bak
+*.orig
+*~
+
+# Ignore all files in the root named test and tests
+/test
+/tests
+
+# Configuration files
 config.json
