@@ -1,0 +1,11 @@
+[Unit]
+Description=Runs github webhook handler
+After=network.target
+
+[Service]
+ExecStart=@SERVICE_EXECUTABLE@ @SERVICE_CONFIG_FILE@
+Restart=always
+Type=simple
+
+[Install]
+WantedBy=default.target
