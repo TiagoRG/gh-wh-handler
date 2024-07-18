@@ -8,6 +8,17 @@ Routes::Routes(nlohmann::json config) {
     const nlohmann::json config_run_scripts = config["run-scripts"];
     const nlohmann::json config_tokens = config["tokens"];
 
+    CROW_ROUTE(this->app, "/")
+        .methods("POST"_method)
+        .name("Ping")
+        ([]() {
+            nlohmann::json response = {
+                {"status", 200},
+                {"message", "Pong"}
+            };
+            return crow::response(200, response.dump());
+        });
+
     CROW_ROUTE(this->app, "/update-files")
         .methods("POST"_method)
         .name("Update Files")
