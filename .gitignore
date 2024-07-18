@@ -1,15 +1,15 @@
 # CMake build directories
-/build*/
-/CMakeFiles/
-/CMakeCache.txt
-/cmake_install.cmake
-/*.cmake
-/*.cbp
-/*.layout
-/*.stackdump
-/CPackConfig.cmake
-/Makefile
-/CTestTestfile.cmake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.cmake
+*.cbp
+*.layout
+*.stackdump
+CPackConfig.cmake
+Makefile
+CTestTestfile.cmake
+install_manifest.txt
 
 # Compiled binaries
 /bin/

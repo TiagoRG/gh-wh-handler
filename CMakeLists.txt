@@ -49,7 +49,7 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
 set(SERVICE_EXECUTABLE "/services/gh-wh-handler/${EXECUTABLE_NAME}")
 set(SERVICE_CONFIG "/services/gh-wh-handler/config.json")
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/gh-wh-handler.service.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/gh-wh-handler.service.in"
     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/gh-wh-handler.service"
 @ONLY)
 install(CODE "file(MAKE_DIRECTORY /services/gh-wh-handler)")
@@ -65,7 +65,7 @@ install(CODE "execute_process(COMMAND systemctl start gh-wh-handler)")
 
 if(NOT TARGET uninstall)
   configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake" IMMEDIATE @ONLY)
   add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake)
 endif()
