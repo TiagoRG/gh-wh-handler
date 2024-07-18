@@ -1,0 +1,22 @@
+message(STATUS "[0%] Stopping systemd service...")
+execute_process(COMMAND systemctl stop gh-wh-handler)
+
+message(STATUS "[15%] Disabling systemd service...")
+execute_process(COMMAND systemctl disable gh-wh-handler)
+
+message(STATUS "[30%] Removing service configuration file from systemd directory...")
+file(REMOVE /etc/systemd/system/gh-wh-handler.service)
+
+message(STATUS "[45%] Reloading systemd daemon...")
+execute_process(COMMAND systemctl daemon-reload)
+
+message(STATUS "[55%] Removing symlink to service executable...")
+execute_process(COMMAND rm /usr/bin/gh-wh-handler)
+
+message(STATUS "[70%] Removing service executable from service directory...")
+file(REMOVE /services/gh-wh-handler/@EXECUTABLE_NAME@)
+
+message(STATUS "[85%] Removing service directory...")
+file(REMOVE /services/gh-wh-handler)
+
+message(STATUS "[100%] Uninstallation complete!")

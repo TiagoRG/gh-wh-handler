@@ -3,7 +3,7 @@ Description=Runs github webhook handler
 After=network.target
 
 [Service]
-ExecStart=@SERVICE_EXECUTABLE@ @SERVICE_CONFIG_FILE@
+ExecStart=@SERVICE_EXECUTABLE@ @SERVICE_CONFIG@
 Restart=always
 Type=simple
 
