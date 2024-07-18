@@ -4,7 +4,6 @@
 class Routes {
     public:
         Routes(nlohmann::json);
-        ~Routes();
 
     private:
         crow::SimpleApp app;

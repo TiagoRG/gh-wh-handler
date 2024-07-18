@@ -15,7 +15,7 @@ void signal_handler(const int signum) {
 int main(int argc, char **argv) {
     // Check for config file argument, exit if it's not there
     if (argc < 2 || argc > 2) {
-        std::cerr << "Usage: " << 0[argv] << " <config_file>" << std::endl;
+        std::cerr << "Usage: " << 0[argv] << " <config | /path/to/config.json>" << std::endl;
         return 1;
     }
 
