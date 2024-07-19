@@ -58,6 +58,10 @@ Routes::Routes(nlohmann::json config) {
         });
 
     Logger::info("Starting server");
-    this->app.port(config["port"].get<int>()).multithreaded().run();
+    try {
+        this->app.port(config["port"].get<int>()).multithreaded().run();
+    } catch (const std::exception &e) {
+        Logger::fatal("Error starting server: " + std::string(e.what()));
+    }
     Logger::info("Server stopped");
 }

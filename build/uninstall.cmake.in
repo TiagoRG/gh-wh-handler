@@ -16,7 +16,7 @@ execute_process(COMMAND rm /usr/bin/gh-wh-handler)
 message(STATUS "[70%] Removing service executable from service directory...")
 file(REMOVE /services/gh-wh-handler/@EXECUTABLE_NAME@)
 
-message(STATUS "[85%] Removing service directory...")
-file(REMOVE /services/gh-wh-handler)
+message(STATUS "[85%] Removing all log files...")
+execute_process(COMMAND rm -fr /services/gh-wh-handler/logs)
 
 message(STATUS "[100%] Uninstallation complete!")

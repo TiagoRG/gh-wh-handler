@@ -48,12 +48,16 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
 # Install the executable
 set(SERVICE_EXECUTABLE "/services/gh-wh-handler/${EXECUTABLE_NAME}")
 set(SERVICE_CONFIG "/services/gh-wh-handler/config.json")
+set(SERVICE_LOGS "/services/gh-wh-handler/logs")
 configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/gh-wh-handler.service.in"
     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/gh-wh-handler.service"
 @ONLY)
 install(CODE "file(MAKE_DIRECTORY /services/gh-wh-handler)")
+install(CODE "file(MAKE_DIRECTORY /services/gh-wh-handler/logs)")
 install(TARGETS ${EXECUTABLE_NAME} DESTINATION /services/gh-wh-handler)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.json"
+    DESTINATION /services/gh-wh-handler)
 install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
     /services/gh-wh-handler/${EXECUTABLE_NAME} /usr/bin/gh-wh-handler)")
 install(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/gh-wh-handler.service"

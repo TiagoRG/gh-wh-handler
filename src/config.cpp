@@ -5,7 +5,7 @@
 
 #include "logger.hpp"
 
-void Config::create_config() {
+void Config::create_config(std::string config_file_path) {
     std::cout << "Creating config file" << std::endl;
     nlohmann::json config = {
         {"port", 65001},
@@ -13,20 +13,21 @@ void Config::create_config() {
         {"run-scripts", nlohmann::json::array()},
         {"tokens", nlohmann::json::array()},
     };
-    if (!std::filesystem::exists("/services/gh-wh-handler")) {
+    std::string path_to_config = config_file_path.substr(0, config_file_path.find_last_of('/'));
+    if (!std::filesystem::exists(path_to_config)) {
         try {
-            std::filesystem::create_directories("/services/gh-wh-handler");
+            std::filesystem::create_directories(path_to_config);
         } catch (std::exception &e) {
-            Logger::error("[Config] Error creating directory '/services/gh-wh-handler/': " + std::string(e.what()));
+            Logger::error("[Config] Error creating directory '" + path_to_config +"': " + std::string(e.what()));
             return;
         }
     }
     try {
-        std::ofstream config_file("/services/gh-wh-handler/config.json");
+        std::ofstream config_file(config_file_path);
         config_file << config.dump(2);
         config_file.close();
     } catch (std::exception& e) {
-        Logger::error("[Config] Error creating config file: " + std::string(e.what()));
+        Logger::fatal("[Config] Error creating config file: " + std::string(e.what()));
     }
 }
 
@@ -39,7 +40,7 @@ nlohmann::json Config::get_config(std::string config_file_path) {
         config_file >> config;
         config_file.close();
     } catch (std::exception& e) {
-        Logger::error("Error loading config file: " + std::string(e.what()));
+        Logger::fatal("Error loading config file: " + std::string(e.what()));
     }
 
     Logger::success("[Config] Loaded config file: " + config_file_path);

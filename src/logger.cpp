@@ -1,4 +1,5 @@
 #include "logger.hpp"
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -33,8 +34,29 @@
 
 std::ofstream Logger::log_file;
 
-void Logger::init(std::string log_file_path) {
+void Logger::init(std::string logs_dir) {
     std::cout << "Initializing logger" << std::endl;
+    std::cout << "Logs directory: " << logs_dir << std::endl;
+    // check if logs_dir exists
+    if (!std::filesystem::exists(logs_dir)) {
+        try {
+            std::filesystem::create_directories(logs_dir);
+        } catch (std::exception &e) {
+            std::cerr << "Error creating logs directory: " << e.what() << std::endl;
+            std::exit(1);
+        }
+    }
+    // check if logs_dir ends with a slash
+    if (logs_dir.back() != '/') {
+        logs_dir += "/";
+    }
+    std::time_t now = std::time(nullptr);
+    std::tm *now_tm = std::localtime(&now);
+    char time_buffer[80];
+    std::strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d_%H-%M-%S", now_tm);
+
+    std::string log_file_path = logs_dir + "gh-wh-handler_" + time_buffer + ".log";
+
     std::cout << "Log file: " << log_file_path << std::endl;
     Logger::log_file.open(log_file_path, std::ios::app);
     if (!Logger::log_file.is_open()) {
@@ -68,7 +90,6 @@ void Logger::code(std::string message) {
 }
 
 void Logger::log(std::string message, std::string level) {
-    // Implement logger with terminal colors if terminal supports it
     std::string formatted_message = "";
     if (isatty(fileno(stdout))) {
         if (level == "INFO    ") {
@@ -98,8 +119,8 @@ void Logger::log(std::string message, std::string level) {
     if (level == "CODE") {
         struct winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-        int term_width = w.ws_col;
-        formatted_message += "\n" + std::string(term_width - 1, '=') + "\n" + message + "\n" + std::string(term_width - 1, '=');
+        int term_width = w.ws_col > 250 ? 250 : w.ws_col - 1;
+        formatted_message += "\n" + std::string(term_width, '=') + "\n" + message + "\n" + std::string(term_width, '=');
     } else {
         formatted_message += "[" + level + "] " + message;
     }
@@ -110,15 +131,15 @@ void Logger::log(std::string message, std::string level) {
     if (level == "CODE") {
         struct winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-        int term_width = w.ws_col;
-        Logger::log_file << std::string(term_width - 1, '=') << std::endl << message << std::endl << std::string(term_width - 1, '=') << std::endl;
+        int term_width = w.ws_col > 250 ? 250 : w.ws_col - 1;
+        Logger::log_file << std::string(term_width, '=') << std::endl << message << std::endl << std::string(term_width, '=') << std::endl;
     } else {
         Logger::log_file << "[" << level << "] " << message << std::endl;
     }
 
     Logger::log_file.flush();
 
-    if (level == "FATAL") {
+    if (level == "FATAL   ") {
         std::exit(1);
     }
 }

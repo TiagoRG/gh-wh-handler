@@ -5,7 +5,7 @@
 
 class Config {
     public:
-        static void create_config();
+        static void create_config(std::string config_file_path);
         static nlohmann::json get_config(std::string config_file_path);
         static void open_config_menu();
 

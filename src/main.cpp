@@ -15,8 +15,8 @@ void signal_handler(const int signum) {
 
 int main(int argc, char **argv) {
     // Check for config file argument, exit if it's not there
-    if (argc < 2 || argc > 3) {
-        std::cerr << "Usage: " << 0[argv] << " </path/to/config.json> [--config]" << std::endl;
+    if (argc < 3 || argc > 4) {
+        std::cerr << "Usage: " << 0[argv] << " </path/to/config.json> </path/to/logs_dir> [--config]" << std::endl;
         return 1;
     }
 
@@ -26,10 +26,11 @@ int main(int argc, char **argv) {
     std::strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d_%H-%M-%S", now_tm);
 
     std::string config_file_path = 1[argv];
-    std::string log_file_path = config_file_path.substr(0, config_file_path.find_last_of("/")) + "/gh-wh-handler_" + time_buffer + ".log";
-    Logger::init(log_file_path);
+    std::string logs_dir = 2[argv];
 
-    if (argc == 3 && std::string(argv[2]) == "--config") {
+    Logger::init(logs_dir);
+
+    if (argc == 4 && std::string(argv[3]) == "--config") {
         Config::open_config_menu();
         return 0;
     }
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
     // Check if config file exists
     if (!std::filesystem::exists(config_file_path)) {
         Logger::warn("Config file does not exist, creating...");
-        Config::create_config();
+        Config::create_config(config_file_path);
     }
 
     // Load configuration

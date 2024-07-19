@@ -131,12 +131,13 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         std::string remote_path = file[0];
 
         std::string local_path = config_update_files[repo]["files"][remote_path];
-        try {
-            std::filesystem::create_directories(local_path.substr(0, local_path.find_last_of('/')));
-        } catch (const std::exception &e) {
-            Logger::error("[/update-files] Failed to create directories for " + local_path + ": " + std::string(e.what()));
-            continue;
-        }
+        if (local_path.find_last_of('/') != std::string::npos)
+            try {
+                std::filesystem::create_directories(local_path.substr(0, local_path.find_last_of('/')));
+            } catch (const std::exception &e) {
+                Logger::error("[/update-files] Failed to create directories for " + local_path + ": " + std::string(e.what()));
+                continue;
+            }
 
         std::string command = "curl -s https://raw.githubusercontent.com/" + repo + "/" + ref + "/" + remote_path + " -o " + local_path;
         if (is_private) command += " -H 'Authorization: token " + token + "'";
