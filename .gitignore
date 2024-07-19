@@ -1,15 +1,19 @@
 # CMake build directories
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-*.cmake
-*.cbp
-*.layout
-*.stackdump
-CPackConfig.cmake
-Makefile
-CTestTestfile.cmake
-install_manifest.txt
+/build/*
+!/build/config.json
+!/build/gh-wh-handler.service.in
+!/build/uninstall.cmake.in
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/*.cmake
+/*.cbp
+/*.layout
+/*.stackdump
+/CPackConfig.cmake
+/Makefile
+/CTestTestfile.cmake
+/install_manifest.txt
 
 # Compiled binaries
 /bin/

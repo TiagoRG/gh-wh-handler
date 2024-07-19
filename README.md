@@ -6,6 +6,14 @@ Currently creating a local copy of remote files on every push
 
 ## Usage
 
+### Use installation script (recommended)
+
+Run the installation script to install the application:
+
+```console
+curl -fsSL https://cdn.tiagorg.pt/gh-wh-handler/install.sh | sudo sh
+```
+
 ### Run prebuilt binary
 
 Head over to the [Releases Page](https://github.com/TiagoRG/gh-wh-handler/releases) and download the desired binary.
