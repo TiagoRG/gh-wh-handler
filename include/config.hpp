@@ -1,9 +1,12 @@
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
+
 #include <nlohmann/json.hpp>
 
 class Config {
     public:
         static void create_config();
-        static nlohmann::json get_config();
+        static nlohmann::json get_config(std::string config_file_path);
         static void open_config_menu();
 
     private:
@@ -23,3 +26,5 @@ class Config {
         static void remove_run_scripts_script(std::string repo, std::string script_path);
         static void remove_token(std::string repo, std::string token);
 };
+
+#endif

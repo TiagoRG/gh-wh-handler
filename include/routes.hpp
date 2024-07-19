@@ -1,3 +1,6 @@
+#ifndef ROUTES_HPP
+#define ROUTES_HPP
+
 #include <crow/app.h>
 #include <nlohmann/json.hpp>
 
@@ -8,3 +11,5 @@ class Routes {
     private:
         crow::SimpleApp app;
 };
+
+#endif

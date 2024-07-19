@@ -1,12 +1,14 @@
 #include "endpoints/update-files.hpp"
 #include <vector>
 
+#include "logger.hpp"
+
 crow::response update_files(const nlohmann::json& config_update_files, const nlohmann::json& config_tokens, const crow::request& req) {
     nlohmann::json payload;
     try {
         payload = nlohmann::json::parse(req.body);
     } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "Error parsing payload: " << e.what() << std::endl;
+        Logger::error("[/update-files] Error parsing payload: " + std::string(e.what()));
         nlohmann::json response = {
             {"status", 400},
             {"error", "Error parsing payload"}
@@ -27,7 +29,7 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         is_private = payload["repository"]["private"];
         if (is_private) {
             if (config_tokens.find(repo) == config_tokens.end()) {
-                printf("No token configured for private repo %s\n", repo.c_str());
+                Logger::warn("[/update-files] No token configured for private repo " + repo);
                 nlohmann::json response = {
                     {"status", 403},
                     {"error",  "No token configured for private repo"}
@@ -37,7 +39,7 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
             token = config_tokens[repo];
         }
     } catch (nlohmann::json::out_of_range& e) {
-        std::cerr << "Error parsing payload: " << e.what() << std::endl;
+        Logger::error("[/update-files] Invalid JSON payload: " + std::string(e.what()));
         nlohmann::json response = {
             {"status", 400},
             {"error", "Invalid JSON payload"}
@@ -45,16 +47,18 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         return crow::response(400, response.dump());
     }
 
-    printf("Received push to %s:%s (private: %s)\n", repo.c_str(), ref.c_str(), is_private ? "true" : "false");
+    Logger::info("[/update-files] Received push to " + repo + ":" + ref + " (private: " + (is_private ? "true" : "false") + ")");
 
     if (config_update_files.find(repo) == config_update_files.end()) {
-        printf("No update-files webhook configuration for repo %s\n", repo.c_str());
+        Logger::warn("[/update-files] No update-files webhook configuration for repo " + repo);
         nlohmann::json response = {
             {"status", 404},
             {"error", "No update-files webhook configuration for repo"}
         };
         return crow::response(404, response.dump());
     }
+
+    Logger::info("[/update-files] Found update-files webhook configuration for repo " + repo);
 
     nlohmann::json config;
     bool found = false;
@@ -65,7 +69,7 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         found = true;
     }
     if (!found) {
-        printf("No update-files webhook configuration for repo %s:%s\n", repo.c_str(), ref.c_str());
+        Logger::warn("[/update-files] No update-files webhook configuration for branch " + ref);
         nlohmann::json response = {
             {"status", 404},
             {"error", "No update-files webhook configuration for branch" + ref}
@@ -73,11 +77,13 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         return crow::response(404, response.dump());
     }
 
+    Logger::info("[/update-files] Found update-files webhook configuration for branch " + ref);
+
     if (config["files"].empty()) {
-        printf("No files configured for repo %s:%s\n", repo.c_str(), ref.c_str());
+        Logger::warn("[/update-files] No files configured for repo " + repo + ":" + ref);
         nlohmann::json response = {
             {"status", 404},
-            {"error", "No files configured for branch" + ref}
+            {"error", "No files configured for repo" + repo + ":" + ref}
         };
         return crow::response(404, response.dump());
     }
@@ -98,9 +104,23 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         }
     }
 
+    Logger::info("[/update-files] Found " + std::to_string(modified_files.size()) + " files to update for repo " + repo + ":" + ref);
+
+    if (modified_files.empty()) {
+        Logger::info("[/update-files] No files to update for repo " + repo + ":" + ref);
+        nlohmann::json response = {
+            {"status", 200},
+            {"message", "No files to update"}
+        };
+        return crow::response(200, response.dump());
+    }
+
+    Logger::info("[/update-files] Updating " + std::to_string(modified_files.size()) + " files for repo " + repo + ":" + ref);
+
     nlohmann::json response = {
         {"status", 200},
         {"message", "OK"},
+        {"file_count", 0},
         {"updated-files", nlohmann::json::array()}
     };
     for (auto &file : modified_files) {
@@ -110,32 +130,33 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         try {
             std::filesystem::create_directories(local_path.substr(0, local_path.find_last_of('/')));
         } catch (const std::exception &e) {
-            std::cerr << "Failed to create directories for " << local_path << ": " << e.what() << std::endl;
+            Logger::error("[/update-files] Failed to create directories for " + local_path + ": " + std::string(e.what()));
             continue;
         }
 
         std::string command = "curl -s https://raw.githubusercontent.com/" + repo + "/" + ref + "/" + remote_path + " -o " + local_path;
         if (is_private) command += " -H 'Authorization: token " + token + "'";
         std::system(command.c_str());
-        printf("%s %s\n", file[1] == "added" ? "Created" : "Updated", local_path.c_str());
+        Logger::info("[/update-files] " + std::string(file[1] == "added" ? "Created" : "Updated") + " " + local_path);
         response["file_count"] = response["file_count"].get<int>() + 1;
-        response["updated"].push_back(remote_path);
+        response["updated-files"].push_back(remote_path);
     }
+
+    Logger::success("[/update-files] Finished updating " + std::to_string(modified_files.size()) + " files for repo " + repo + ":" + ref);
+    Logger::info("[/update-files] Running post-update actions for repo " + repo + ":" + ref);
 
     for (auto &c_action : config_update_files[repo]["post-update"]) {
         std::string action = c_action.get<std::string>();
-        printf("Running post-update action: %s\n", action.c_str());
+        Logger::info("[/update-files] Running post-update action: " + action);
         int return_code = std::system(action.c_str());
-        std::ofstream log_file("/var/log/gh-wh-handler.log", std::ios_base::app);
-        time_t now = time(0);
         if (return_code == 0) {
-            printf("Post-update action %s ran successfully\n", action.c_str());
-            log_file << ctime(&now) << "Post-update action " << action << " ran successfully\n";
+            Logger::success("[/update-files] Post-update action " + action + " ran successfully");
         } else {
-            printf("Post-update action %s failed with return code %d\n", action.c_str(), return_code);
-            log_file << ctime(&now) << "Post-update action " << action << " failed with return code " << return_code << "\n";
+            Logger::error("[/update-files] Post-update action " + action + " failed with return code " + std::to_string(return_code));
         }
     }
+
+    Logger::success("[/update-files] Finished running post-update actions for repo " + repo + ":" + ref);
 
     return crow::response(200, response.dump());
 }
