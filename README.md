@@ -108,7 +108,27 @@ Note: Tokens are only required for private repositories.
 
 ## Endpoints
 
-Currently, the only endpoint for the application is `/update-files`, which is used to update the local files on every push as well as run post-update scripts.
+### `/run-actions`
+
+#### Webhook event: `push`
+
+This endpoint allows the application to run specific actions when a push to a specific branch is made. This way, there's no need to manually run the actions on the server.
+
+The configuration file must contain the `run-actions` field, which is an object with the following format:
+
+```json
+"run-actions": {
+  "owner/repo-name": {
+    "branch": "main",
+    "actions": [
+      {
+        "name": "action-name",
+        "command": "command-to-run"
+      }
+    ]
+  }
+}
+```
 
 ### `/update-files`
 
@@ -129,42 +149,14 @@ The configuration file must contain the `update-files` field, which is an object
       "...": "..."
     },
     "post-update": [
-      "post-update-command",
-      "post-update-script",
-      "..."
-    ]
-  }
-}
-```
-
-### `/run-actions`
-
-#### Webhook event: `push`
-
-This endpoint allows the application to run specific actions when a push to a specific branch is made. This way, there's no need to manually run the actions on the server.
-
-The configuration file must contain the `run-actions` field, which is an object with the following format:
-
-```json
-"run-actions": {
-  "owner/repo-name": {
-    "branch": "main",
-    "actions": [
       {
-        "name": "action-name",
-        "command": "command-to-run",
-        "args": [
-          "arg1",
-          "arg2",
-          "..."
-        ]
+        "name": "post-update-action-name",
+        "command": "command-to-run"
       }
     ]
   }
 }
 ```
-
-Note: if you don't want to use the `args` field, just leave an empty array such as `"args": []`.
 
 ## Nginx Configuration
 

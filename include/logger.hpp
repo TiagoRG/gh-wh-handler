@@ -12,6 +12,7 @@ class Logger {
         static void fatal(std::string message);
         static void success(std::string message);
         static void code(std::string message);
+        static void debug(std::string message);
     private:
         static void log(std::string message, std::string level);
         static std::ofstream log_file;

@@ -2,7 +2,7 @@
 
 #include "logger.hpp"
 
-crow::response run_actions(const nlohmann::json &run_actions, const crow::request &req) {
+crow::response run_actions(const nlohmann::json &config_run_actions, const crow::request &req) {
     nlohmann::json payload;
     try {
         payload = nlohmann::json::parse(req.body);
@@ -15,60 +15,61 @@ crow::response run_actions(const nlohmann::json &run_actions, const crow::reques
         return crow::response(400, response.dump());
     }
 
-    std::string ref;
-    std::string repo;
-
-    try {
-        ref = payload["ref"];
-        if (size_t last_slash = ref.find_last_of('/'); last_slash != std::string::npos && last_slash + 1 < ref.length())
-            ref = ref.substr(last_slash + 1);
-        repo = payload["repository"]["full_name"];
-    } catch (nlohmann::json::out_of_range& e) {
-        Logger::error("[/run-actions] Invalid JSON payload: " + std::string(e.what()));
+    if (payload.find("ref") == payload.end() || payload.find("repository") == payload.end() || payload["repository"].find("full_name") == payload["repository"].end()) {
+        Logger::error("[/run-actions] Invalid JSON payload");
         nlohmann::json response = {
             {"status", 400},
             {"error", "Invalid JSON payload"}
         };
         return crow::response(400, response.dump());
     }
+    std::string ref = payload["ref"];
+    if (size_t last_slash = ref.find_last_of('/'); last_slash != std::string::npos && last_slash + 1 < ref.length())
+        ref = ref.substr(last_slash + 1);
+
+    std::string repo = payload["repository"]["full_name"];
 
     Logger::info("[/run-actions] Received push to " + repo + ":" + ref);
 
-    if (run_actions.find(repo) == run_actions.end()) {
-        Logger::warn("[/run-actions] No run-actions webhook configuration for repo " + repo);
+    if (config_run_actions.find(repo) == config_run_actions.end()) {
+        Logger::warn("[/run-actions] No run-actions configuration for repo " + repo);
         nlohmann::json response = {
             {"status", 404},
-            {"error", "No run-actions webhook configuration for repo"}
+            {"error", "No run-actions configuration for repo"}
         };
         return crow::response(404, response.dump());
     }
 
-    Logger::info("[/run-actions] Found run-actions webhook configuration for repo " + repo);
+    Logger::info("[/run-actions] Found run-actions configuration for repo " + repo);
 
     nlohmann::json config;
-    std::string config_branch;
-    nlohmann::json config_actions;
-    try {
-        config = run_actions[repo];
-        config_branch = config["branch"];
-        config_actions = config["actions"];
-    } catch (nlohmann::json::out_of_range& e) {
-        Logger::error("[/run-actions] Invalid run-actions configuration for repo " + repo + ": " + std::string(e.what()));
-        nlohmann::json response = {
-            {"status", 500},
-            {"error", "Invalid run-actions configuration"}
-        };
-        return crow::response(500, response.dump());
+    bool found = false;
+    for (auto c_repo = config_run_actions.begin(); c_repo != config_run_actions.end(); ++c_repo) {
+        if (c_repo.key() != repo) continue;
+        if (c_repo.value().find("branch") == c_repo.value().end() || c_repo.value().find("actions") == c_repo.value().end()) {
+            Logger::error("[/run-actions] Invalid run-actions configuration found for repo " + c_repo.key());
+            nlohmann::json response = {
+                {"status", 500},
+                {"error", "Invalid update-files configuration"}
+            };
+            return crow::response(500, response.dump());
+        }
+        if (c_repo.value()["branch"].get<std::string>() != ref) continue;
+        Logger::info("[/run-actions] Found run-actions configuration for branch " + ref);
+        config = c_repo.value();
+        found = true;
     }
-
-    if (ref != config_branch) {
-        Logger::info("[/run-actions] Ignoring push to " + repo + " on branch " + ref);
+    if (!found) {
+        Logger::info("[/run-actions] Ignoring push to non-configured branch " + ref + " on repo " + repo);
         nlohmann::json response = {
             {"status", 200},
-            {"message", "Ignoring push to " + repo + " on branch " + ref}
+            {"message", "Ignoring push to non-configured branch" + ref}
         };
         return crow::response(200, response.dump());
     }
+
+    std::string config_branch = config["branch"];
+    nlohmann::json config_actions = config["actions"];
 
     if (config_actions.empty()) {
         Logger::info("[/run-actions] No actions configured for " + repo + " on branch " + ref);
@@ -88,30 +89,22 @@ crow::response run_actions(const nlohmann::json &run_actions, const crow::reques
         {"failed-actions", nlohmann::json::array()}
     };
     for (const auto &action : config_actions) {
-        std::string action_name;
-        std::string action_command;
-        nlohmann::json action_args;
-        try {
-            action_name = action["name"];
-            action_command = action["command"];
-            action_args = action["args"];
-        } catch (nlohmann::json::out_of_range& e) {
-            Logger::error("[/run-actions] Invalid action configuration for repo " + repo + ": " + std::string(e.what()));
-            nlohmann::json response = {
+        if (action.find("name") == action.end() || action.find("command") == action.end()) {
+            Logger::error("[/run-actions] Invalid action configuration for repo " + repo);
+            nlohmann::json e_response = {
                 {"status", 500},
-                {"error", "Invalid action configuration"}
+                {"error", "Invalid action configuration"},
+                {"successful-actions", response["successful-actions"]},
+                {"failed-actions", response["failed-actions"]}
             };
-            return crow::response(500, response.dump());
+            return crow::response(500, e_response.dump());
         }
+        std::string action_name = action["name"];
+        std::string action_command = action["command"];
 
         Logger::info("[/run-actions] Running action '" + action_name + "'");
 
-        std::string action_command_with_args = action_command;
-        for (const auto &arg : action_args) {
-            action_command_with_args += " " + arg.get<std::string>();
-        }
-
-        int ret = std::system(action_command_with_args.c_str());
+        int ret = std::system(action_command.c_str());
         if (ret == 0) {
             Logger::info("[/run-actions] Action " + action_name + " completed successfully");
             response["successful-actions"].push_back(action_name);

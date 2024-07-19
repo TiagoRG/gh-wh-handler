@@ -23,31 +23,6 @@ Routes::Routes(nlohmann::json config) {
             return crow::response(200, response.dump());
         });
 
-    Logger::info("[Routes] Registering route \"/update-files\"");
-    CROW_ROUTE(this->app, "/update-files")
-        .methods("POST"_method)
-        .name("Update Files")
-        ([&config_update_files, &config_tokens](const crow::request &req) {
-            if (config_update_files.is_null()) {
-                Logger::warn("[Routes] No update-files configuration found");
-                nlohmann::json response = {
-                    {"status", 404},
-                    {"error", "No update-files configuration found"}
-                };
-                return crow::response(404, response.dump());
-            }
-            try {
-                return update_files(config_update_files, config_tokens, req);
-            } catch (const std::exception &e) {
-                Logger::error("[Routes] Unknown error in update_files: " + std::string(e.what()));
-                nlohmann::json response = {
-                    {"status", 500},
-                    {"error", "Internal server error"}
-                };
-                return crow::response(500, response.dump());
-            }
-        });
-
     Logger::info("[Routes] Registering route \"/run-actions\"");
     CROW_ROUTE(this->app, "/run-actions")
         .methods("POST"_method)
@@ -65,6 +40,31 @@ Routes::Routes(nlohmann::json config) {
                 return run_actions(config_run_actions, req);
             } catch (const std::exception &e) {
                 Logger::error("[Routes] Unknown error in run_actions: " + std::string(e.what()));
+                nlohmann::json response = {
+                    {"status", 500},
+                    {"error", "Internal server error"}
+                };
+                return crow::response(500, response.dump());
+            }
+        });
+
+    Logger::info("[Routes] Registering route \"/update-files\"");
+    CROW_ROUTE(this->app, "/update-files")
+        .methods("POST"_method)
+        .name("Update Files")
+        ([&config_update_files, &config_tokens](const crow::request &req) {
+            if (config_update_files.is_null()) {
+                Logger::warn("[Routes] No update-files configuration found");
+                nlohmann::json response = {
+                    {"status", 404},
+                    {"error", "No update-files configuration found"}
+                };
+                return crow::response(404, response.dump());
+            }
+            try {
+                return update_files(config_update_files, config_tokens, req);
+            } catch (const std::exception &e) {
+                Logger::error("[Routes] Unknown error in update_files: " + std::string(e.what()));
                 nlohmann::json response = {
                     {"status", 500},
                     {"error", "Internal server error"}

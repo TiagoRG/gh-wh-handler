@@ -89,6 +89,10 @@ void Logger::code(std::string message) {
     Logger::log(message, "CODE");
 }
 
+void Logger::debug(std::string message) {
+    Logger::log(message, "DEBUG   ");
+}
+
 void Logger::log(std::string message, std::string level) {
     std::string formatted_message = "";
     if (isatty(fileno(stdout))) {
@@ -107,6 +111,11 @@ void Logger::log(std::string message, std::string level) {
         } else if (level == "CODE") {
             formatted_message += COLORS_FG_WHITE;
             formatted_message += COLORS_DIM;
+        } else if (level == "DEBUG   ") {
+            formatted_message += COLORS_FG_BLUE;
+            formatted_message += COLORS_UNDERLINED;
+            formatted_message += COLORS_DIM;
+            formatted_message += COLORS_BOLD;
         }
     }
 
