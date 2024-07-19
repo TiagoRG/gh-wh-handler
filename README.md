@@ -166,6 +166,36 @@ The configuration file must contain the `run-actions` field, which is an object 
 
 Note: if you don't want to use the `args` field, just leave an empty array such as `"args": []`.
 
+## Nginx Configuration
+
+If you want to use Nginx as a reverse proxy for the application, you can use the following example configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name services.example.com;
+
+    location /gh-wh-handler {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        add_header Front-End-Https on;
+
+        proxy_headers_hash_max_size 512;
+        proxy_headers_hash_bucket_size 64;
+
+        proxy_buffering off;
+        proxy_redirect off;
+        proxy_max_temp_file_size 0;
+        rewrite /gh-wh-handler/(.*) /$1  break;
+        proxy_pass http://127.0.0.1:65001;
+    }
+}
+```
+
+This way, you will be able to access the application using the URL `http://services.example.com/gh-wh-handler/end-point`.
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
