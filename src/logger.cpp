@@ -117,10 +117,14 @@ void Logger::log(std::string message, std::string level) {
     formatted_message += "(" + std::string(time_buffer) + ") ";
 
     if (level == "CODE") {
+#if defined(__aarch64__)
+        formatted_message += "\n" + message + "\n";
+#else
         struct winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         int term_width = w.ws_col > 250 ? 250 : w.ws_col - 1;
         formatted_message += "\n" + std::string(term_width, '=') + "\n" + message + "\n" + std::string(term_width, '=');
+#endif
     } else {
         formatted_message += "[" + level + "] " + message;
     }
@@ -129,10 +133,14 @@ void Logger::log(std::string message, std::string level) {
     }
     std::cout << formatted_message << std::endl;
     if (level == "CODE") {
+#if defined(__aarch64__)
+        Logger::log_file << std::endl << message << std::endl;
+#else
         struct winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         int term_width = w.ws_col > 250 ? 250 : w.ws_col - 1;
         Logger::log_file << std::string(term_width, '=') << std::endl << message << std::endl << std::string(term_width, '=') << std::endl;
+#endif
     } else {
         Logger::log_file << "[" << level << "] " << message << std::endl;
     }

@@ -9,7 +9,7 @@ void Config::create_config(std::string config_file_path) {
     std::cout << "Creating config file" << std::endl;
     nlohmann::json config = {
         {"port", 65001},
-        {"tokens", nlohmann::json::array()},
+        {"tokens", {}},
     };
     std::string path_to_config = config_file_path.substr(0, config_file_path.find_last_of('/'));
     if (!std::filesystem::exists(path_to_config)) {

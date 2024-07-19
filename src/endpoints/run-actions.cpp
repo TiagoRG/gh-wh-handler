@@ -2,7 +2,7 @@
 
 #include "logger.hpp"
 
-crow::response run_actions(const nlohmann::json &run_actions, const nlohmann::json &tokens, const crow::request &req) {
+crow::response run_actions(const nlohmann::json &run_actions, const crow::request &req) {
     nlohmann::json payload;
     try {
         payload = nlohmann::json::parse(req.body);
