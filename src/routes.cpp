@@ -1,6 +1,6 @@
 #include "routes.hpp"
 #include "endpoints/update-files.hpp"
-#include "endpoints/run-scripts.hpp"
+#include "endpoints/run-actions.hpp"
 #include <crow/app.h>
 
 #include "logger.hpp"
@@ -8,7 +8,7 @@
 Routes::Routes(nlohmann::json config) {
     Logger::info("Partitioning configuration");
     const nlohmann::json config_update_files = config["update-files"];
-    const nlohmann::json config_run_scripts = config["run-scripts"];
+    const nlohmann::json config_run_actions = config["run-actions"];
     const nlohmann::json config_tokens = config["tokens"];
 
     Logger::info("Registering route \"/\"");
@@ -42,16 +42,16 @@ Routes::Routes(nlohmann::json config) {
             });
     }
 
-    if (!config_run_scripts.is_null()) {
-        Logger::info("Registering route \"/run-scripts\"");
-        CROW_ROUTE(this->app, "/run-scripts")
+    if (!config_run_actions.is_null()) {
+        Logger::info("Registering route \"/run-actions\"");
+        CROW_ROUTE(this->app, "/run-actions")
             .methods("POST"_method)
-            .name("Run Scripts")
-            ([&config_run_scripts, &config_tokens](const crow::request &req) {
+            .name("Run Actions")
+            ([&config_run_actions, &config_tokens](const crow::request &req) {
                 try {
-                    return run_scripts(config_run_scripts, config_tokens, req);
+                    return run_actions(config_run_actions, config_tokens, req);
                 } catch (const std::exception &e) {
-                    Logger::error("Unknown error in run_scripts: " + std::string(e.what()));
+                    Logger::error("Unknown error in run_actions: " + std::string(e.what()));
                     nlohmann::json response = {
                         {"status", 500},
                         {"error", "Internal server error"}

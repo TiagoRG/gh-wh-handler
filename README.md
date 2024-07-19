@@ -137,6 +137,33 @@ The configuration file must contain the `update-files` field, which is an object
 }
 ```
 
+### `/run-actions`
+
+#### Webhook event: `push`
+
+This endpoint allows the application to run specific actions when a push to a specific branch is made. This way, there's no need to manually run the actions on the server.
+
+The configuration file must contain the `run-actions` field, which is an object with the following format:
+
+```json
+"run-actions": {
+  "owner/repo-name": {
+    "branch": "main",
+    "actions": [
+      {
+        "name": "action-name",
+        "command": "command-to-run",
+        "args": [
+          "arg1",
+          "arg2",
+          "..."
+        ]
+      }
+    ]
+  }
+}
+```
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.

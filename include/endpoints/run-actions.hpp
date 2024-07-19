@@ -5,6 +5,6 @@
 #include <crow/http_response.h>
 #include <nlohmann/json.hpp>
 
-crow::response run_scripts(const nlohmann::json &, const nlohmann::json &,const crow::request &);
+crow::response run_actions(const nlohmann::json &, const nlohmann::json &,const crow::request &);
 
 #endif
