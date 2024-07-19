@@ -9,8 +9,6 @@ void Config::create_config(std::string config_file_path) {
     std::cout << "Creating config file" << std::endl;
     nlohmann::json config = {
         {"port", 65001},
-        {"update-files", nlohmann::json::array()},
-        {"run-scripts", nlohmann::json::array()},
         {"tokens", nlohmann::json::array()},
     };
     std::string path_to_config = config_file_path.substr(0, config_file_path.find_last_of('/'));
@@ -41,6 +39,20 @@ nlohmann::json Config::get_config(std::string config_file_path) {
         config_file.close();
     } catch (std::exception& e) {
         Logger::fatal("Error loading config file: " + std::string(e.what()));
+    }
+
+    if (config.is_null()) {
+        Logger::fatal("[Config] Config file is empty");
+    }
+
+    if (config.find("port") == config.end()) {
+        Logger::warn("[Config] Port not found in config file, using default port 65001");
+        config["port"] = 65001;
+    }
+
+    if (config.find("tokens") == config.end()) {
+        Logger::warn("[Config] Tokens not found in config file, using empty array. Private repositories will not be accessible.");
+        config["tokens"] = nlohmann::json::array();
     }
 
     Logger::success("[Config] Loaded config file: " + config_file_path);

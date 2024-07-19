@@ -2,9 +2,9 @@
 
 ## Simple C++ WebAPI to work with GitHub Webhooks
 
-Currently creating a local copy of remote files on every push
+This application is a simple C++ WebAPI that listens for GitHub Webhooks and performs actions based on the received data and configuration.
 
-## Usage
+## Installation
 
 ### Use installation script (recommended)
 
@@ -20,7 +20,7 @@ Head over to the [Releases Page](https://github.com/TiagoRG/gh-wh-handler/releas
 
 Run the application using your configuration file:
 ```console
-/path/to/gh-wh-handler.<arch> /path/to/config.json
+/path/to/gh-wh-handler.<arch> /path/to/config.json /path/to/logs_dir
 ```
 
 You can see the config file format below.
@@ -32,7 +32,7 @@ You can see the config file format below.
 - [CrowCpp](https://crowcpp.org/master/)
 - [nlohmann::json](https://github.com/nlohmann/json)
 
-#### Build the application:
+#### Build and install the application:
 
 1. Clone the repository:
 
@@ -55,7 +55,7 @@ cmake ..
 sudo make install
 ```
 
-#### Run the application:
+## Usage
 
 The application is running on a systemd service, which is both enabled and started after installation.
 
@@ -80,45 +80,51 @@ As of now, the configuration menu is not yet implemented so you have to create t
 
 ### Config File
 
-The configuration file can be found in `/services/gh-wh-handler/config.json` and has the following format:
+The configuration file can be found in `/services/gh-wh-handler/config.json` and has the following base format:
 
 ```json
 {
   "port": 65001,
-  "update-files": {
-    "owner/repo-name": {
-      "branch": "main",
-      "files": {
-        "path/to/remote/file": "/path/to/local/file",
-        "...": "..."
-      },
-      "post-update": [
-        "post-update-command",
-        "post-update-script",
-        "..."
-      ]
-    }
-  },
-  "run-scripts": {
-    "owner/repo-name": {
-      "branch": "main",
-      "actions": [
-        "command",
-        "script",
-      ]
-    }
-  },
   "tokens": {
     "owner/repo-name": "token"
   }
 }
 ```
 
+This configuration will then have more fields for each endpoint that you want to configure.
+
+Note: Tokens are only required for private repositories.
+
 ## Endpoints
 
 Currently, the only endpoint for the application is `/update-files`, which is used to update the local files on every push as well as run post-update scripts.
 
-Since only the `/update-files` endpoint is implemented, the configuration file may not contain the `run-scripts` field.
+### `/update-files`
+
+#### Webhook event: `push`
+
+This endpoint allows the application to update specific files on the server when a push to a specific branch is made. This way, there's no need to manually update the files on the server or to pull the entire repository.
+
+It also allows the application to run post-update scripts after the files are updated.
+
+The configuration file must contain the `update-files` field, which is an object with the following format:
+
+```json
+"update-files": {
+  "owner/repo-name": {
+    "branch": "main",
+    "files": {
+      "path/to/remote/file": "/path/to/local/file",
+      "...": "..."
+    },
+    "post-update": [
+      "post-update-command",
+      "post-update-script",
+      "..."
+    ]
+  }
+}
+```
 
 ## License
 
