@@ -14,6 +14,12 @@ Run the installation script to install the application:
 curl -fsSL https://cdn.tiagorg.pt/gh-wh-handler/install.sh | sudo sh
 ```
 
+You can uninstall the application using the following command:
+
+```console
+curl -fsSL https://cdn.tiagorg.pt/gh-wh-handler/uninstall.sh | sudo sh
+```
+
 ### Run prebuilt binary
 
 Head over to the [Releases Page](https://github.com/TiagoRG/gh-wh-handler/releases) and download the desired binary.
@@ -53,6 +59,11 @@ cmake ..
 4. Build and install the application:
 ```console
 sudo make install
+```
+
+If you want to uninstall the application, you can run the following command:
+```console
+sudo make uninstall
 ```
 
 ## Usage
