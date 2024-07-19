@@ -121,7 +121,11 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         {"status", 200},
         {"message", "OK"},
         {"file_count", 0},
-        {"updated-files", nlohmann::json::array()}
+        {"updated-files", nlohmann::json::array()},
+        {"post-update", {
+            {"successful", nlohmann::json::array()},
+            {"failed", nlohmann::json::array()}
+        }}
     };
     for (auto &file : modified_files) {
         std::string remote_path = file[0];
@@ -151,8 +155,10 @@ crow::response update_files(const nlohmann::json& config_update_files, const nlo
         int return_code = std::system(action.c_str());
         if (return_code == 0) {
             Logger::success("[/update-files] Post-update action " + action + " ran successfully");
+            response["post-update"]["successful"].push_back(action);
         } else {
             Logger::error("[/update-files] Post-update action " + action + " failed with return code " + std::to_string(return_code));
+            response["post-update"]["failed"].push_back(action);
         }
     }
 
