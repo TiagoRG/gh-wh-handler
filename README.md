@@ -32,11 +32,9 @@ You can see the config file format below.
 git clone https://github.com/TiagoRG/gh-wh-handler.git
 ```
 
-2. Create the build directory:
+2. Move to the build directory:
 ```console
-cd gh-wh-handler
-mkdir build
-cd build
+cd gh-wh-handler/build
 ```
 
 3. Run CMake:
