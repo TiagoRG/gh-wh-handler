@@ -10,6 +10,8 @@ class Routes {
 
     private:
         crow::SimpleApp app;
+
+        static bool check_ping(const crow::request &req);
 };
 
 #endif

@@ -11,6 +11,8 @@ Routes::Routes(nlohmann::json config) {
     const nlohmann::json config_run_actions = config["run-actions"];
     const nlohmann::json config_tokens = config["tokens"];
 
+    Logger::info("[Routes] Creating server");
+
     Logger::info("[Routes] Registering route \"/\"");
     CROW_ROUTE(this->app, "/")
         .methods("POST"_method, "GET"_method)
@@ -28,6 +30,13 @@ Routes::Routes(nlohmann::json config) {
         .methods("POST"_method)
         .name("Run Actions")
         ([&config_run_actions](const crow::request &req) {
+            if (check_ping(req)) {
+                nlohmann::json response = {
+                    {"status", 200},
+                    {"message", "Pong"}
+                };
+                return crow::response(200, response.dump());
+            }
             if (config_run_actions.is_null()) {
                 Logger::warn("[Routes] No run-actions configuration found");
                 nlohmann::json response = {
@@ -53,6 +62,13 @@ Routes::Routes(nlohmann::json config) {
         .methods("POST"_method)
         .name("Update Files")
         ([&config_update_files, &config_tokens](const crow::request &req) {
+            if (check_ping(req)) {
+                nlohmann::json response = {
+                    {"status", 200},
+                    {"message", "Pong"}
+                };
+                return crow::response(200, response.dump());
+            }
             if (config_update_files.is_null()) {
                 Logger::warn("[Routes] No update-files configuration found");
                 nlohmann::json response = {
@@ -91,4 +107,15 @@ Routes::Routes(nlohmann::json config) {
         Logger::fatal("[Routes] Error starting server: " + std::string(e.what()));
     }
     Logger::info("[Routes] Server stopped");
+}
+
+bool Routes::check_ping(const crow::request &req) {
+    if (req.headers.find("X-GitHub-Event") == req.headers.end()) {
+        Logger::warn("[Routes] No X-GitHub-Event header found");
+        return false;
+    }
+    if (req.headers.find("X-GitHub-Event")->second == "ping") {
+        return true;
+    }
+    return false;
 }
