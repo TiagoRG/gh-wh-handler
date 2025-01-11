@@ -30,19 +30,19 @@ int main(int argc, char **argv) {
 
     Logger::init(logs_dir);
 
-    if (argc == 4 && std::string(argv[3]) == "--config") {
-        Config::open_config_menu();
-        return 0;
-    }
-
     // Check if config file exists
     if (!std::filesystem::exists(config_file_path)) {
         Logger::warn("Config file does not exist, creating...");
         Config::create_config(config_file_path);
     }
 
-    // Load configuration
+    // Load current configuration
     nlohmann::json config = Config::get_config(config_file_path);
+
+    if (argc == 4 && std::string(argv[3]) == "--config") {
+        Config::open_menu(config, config_file_path);
+        return 0;
+    }
 
     std::signal(SIGINT, signal_handler);
 

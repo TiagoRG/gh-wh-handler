@@ -2,7 +2,10 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 
+#include "config/terminal-menu.hpp"
+#include "config/dialog-menu.hpp"
 #include "logger.hpp"
 
 void Config::create_config(std::string config_file_path) {
@@ -62,6 +65,19 @@ nlohmann::json Config::get_config(std::string config_file_path) {
     return config;
 }
 
-void Config::open_config_menu() {
-    Logger::warn("[Config] Config menu not implemented yet");
+void Config::open_menu(nlohmann::json config, std::string config_file_path) {
+    Logger::info("[Config] Opening config menu");
+    std::string menu = "";
+    if (std::system("which dialog > /dev/null") == 0) {
+        menu = "dialog";
+    } else {
+        menu = "terminal";
+    }
+
+    if (menu == "dialog") {
+        DialogMenu::open_menu(config, config_file_path);
+    } else {
+        TerminalMenu::open_menu(config, config_file_path);
+    }
 }
+

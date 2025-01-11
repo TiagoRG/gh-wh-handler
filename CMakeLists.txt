@@ -24,6 +24,9 @@ set(EXECUTABLE_NAME "gh-wh-handler.${ARCH}")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Set the compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic")
+
 # Set the output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
@@ -37,13 +40,11 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 # Add the executable
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ${INCLUDE_DIR})
-
-# Add compilation flags
-target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall -Werror)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC ncurses dialog)
 
 # Set linker flags for static linking
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
-    "-static -static-libgcc -static-libstdc++")
+# set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
+#     "-static -static-libgcc -static-libstdc++")
 
 # Install the executable
 set(SERVICE_EXECUTABLE "/services/gh-wh-handler/${EXECUTABLE_NAME}")

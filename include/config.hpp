@@ -7,24 +7,26 @@ class Config {
     public:
         static void create_config(std::string config_file_path);
         static nlohmann::json get_config(std::string config_file_path);
-        static void open_config_menu();
+        static void open_menu(nlohmann::json config, std::string config_file_path);
 
     private:
-        static void set_port(int port);
+        static void open_terminal_only_menu(nlohmann::json config, std::string config_file_path);
 
-        static void add_update_files_repo(std::string repo, std::string branch);
-        static void add_update_files_file(std::string repo, std::string remote_path, std::string local_path);
-        static void add_update_files_post_update(std::string repo, std::string command);
-        static void add_run_scripts_repo(std::string repo, std::string branch);
-        static void add_run_scripts_script(std::string repo, std::string script_path);
-        static void add_token(std::string repo, std::string token);
+        static nlohmann::json set_port(nlohmann::json config, int port);
 
-        static void remove_update_files_repo(std::string repo);
-        static void remove_update_files_file(std::string repo, std::string remote_path);
-        static void remove_update_files_post_update(std::string repo, std::string command);
-        static void remove_run_scripts_repo(std::string repo);
-        static void remove_run_scripts_script(std::string repo, std::string script_path);
-        static void remove_token(std::string repo, std::string token);
+        static nlohmann::json add_update_files_repo(nlohmann::json config, std::string repo, std::string branch);
+        static nlohmann::json add_update_files_file(nlohmann::json config, std::string repo, std::string remote_path, std::string local_path);
+        static nlohmann::json add_update_files_post_update(nlohmann::json config, std::string repo, std::string command);
+        static nlohmann::json add_run_scripts_repo(nlohmann::json config, std::string repo, std::string branch);
+        static nlohmann::json add_run_actions_action(nlohmann::json config, std::string repo, std::string script_path);
+        static nlohmann::json add_token(nlohmann::json config, std::string repo, std::string token);
+
+        static nlohmann::json remove_update_files_repo(nlohmann::json config, std::string repo);
+        static nlohmann::json remove_update_files_file(nlohmann::json config, std::string repo, std::string remote_path);
+        static nlohmann::json remove_update_files_post_update(nlohmann::json config, std::string repo, std::string command);
+        static nlohmann::json remove_run_scripts_repo(nlohmann::json config, std::string repo);
+        static nlohmann::json remove_run_actions_action(nlohmann::json config, std::string repo, std::string script_path);
+        static nlohmann::json remove_token(nlohmann::json config, std::string repo);
 };
 
 #endif
