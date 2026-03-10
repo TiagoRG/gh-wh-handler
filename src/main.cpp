@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
     nlohmann::json config = Config::get_config(config_file_path);
 
     if (argc == 4 && std::string(argv[3]) == "--config") {
+        Logger::enable_config_mode();
         Config::open_menu(config, config_file_path);
         return 0;
     }

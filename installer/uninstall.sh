@@ -1,42 +1,54 @@
-#!/bin/sh
+#!/bin/bash
 
-# Check if the script is being run as root
+ask_user_permission() {
+    local PROMPT_TEXT=$1
+    printf "${PROMPT_TEXT} [Y/n]: "
+
+    read -n 1 -s -r USER_INPUT
+
+    if [[ -z "$USER_INPUT" ]] || [[ "$USER_INPUT" =~ ^[Yy]$ ]]; then
+        echo "Y"
+        return 0
+    else
+        echo "n"
+        return 1
+    fi
+}
+
 if [ "$(id -u)" -ne 0 ]; then
-    echo "This script must be run as root."
+    echo "Error: This script must be run as root (UID 0). Current UID: $(id -u)"
     exit 1
 fi
 
-# Save the current directory
-CUR_DIR=$(pwd)
-
-# Get system architecture
 ARCH=$(uname -m)
+echo "Uninstalling gh-wh-handler [${ARCH}]..."
 
-echo "Uninstalling gh-wh-handler..."
-
-# Stop and disable the service
 echo "Stopping and disabling service..."
-systemctl stop gh-wh-handler
-systemctl disable gh-wh-handler
+systemctl stop gh-wh-handler 2>/dev/null
+systemctl disable gh-wh-handler 2>/dev/null
 
-# Remove the service file
 echo "Removing service file..."
-rm /etc/systemd/system/gh-wh-handler.service
+rm -f "/etc/systemd/system/gh-wh-handler.service"
 
-# Reload systemd
 echo "Reloading systemd..."
 systemctl daemon-reload
 
-# Remove the symbolic link
-echo "Removing symbolic link..."
-rm /usr/bin/gh-wh-handler
+echo "Removing binaries..."
+rm -f "/usr/bin/gh-wh-handler"
+rm -f "/usr/bin/gh-wh-handler.${ARCH}"
 
-# Remove the logs directory and binary
-echo "Removing files..."
-rm -rf /services/gh-wh-handler/logs
-rm -f /services/gh-wh-handler/gh-wh-handler.${ARCH}
+if ask_user_permission "Do you want to remove the configuration file?"; then
+    echo "Removing /etc/gh-wh-handler..."
+    rm -rf "/etc/gh-wh-handler"
+else
+    echo "Skipping configuration removal."
+fi
 
-# Change back to the original directory
-cd $CUR_DIR
+if ask_user_permission "Do you want to remove the logs?"; then
+    echo "Removing /var/log/gh-wh-handler..."
+    rm -rf "/var/log/gh-wh-handler"
+else
+    echo "Skipping log removal."
+fi
+
 echo "Uninstallation complete."
-

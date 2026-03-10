@@ -33,6 +33,7 @@
 #define COLORS_BG_WHITE "\033[47m"
 
 std::ofstream Logger::log_file;
+bool Logger::is_config_mode = false;
 
 void Logger::init(std::string logs_dir) {
     std::cout << "Initializing logger" << std::endl;
@@ -62,6 +63,7 @@ void Logger::init(std::string logs_dir) {
     if (!Logger::log_file.is_open()) {
         std::cerr << "Error opening log file" << std::endl;
     }
+
     Logger::success("Logger initialized");
 }
 
@@ -137,10 +139,15 @@ void Logger::log(std::string message, std::string level) {
     } else {
         formatted_message += "[" + level + "] " + message;
     }
+
     if (isatty(fileno(stdout))) {
         formatted_message += COLORS_RESET;
     }
-    std::cout << formatted_message << std::endl;
+
+    if (!Logger::is_config_mode) {
+        std::cout << formatted_message << std::endl;
+    }
+
     if (level == "CODE") {
 #if defined(__aarch64__)
         Logger::log_file << std::endl << message << std::endl;
@@ -159,4 +166,8 @@ void Logger::log(std::string message, std::string level) {
     if (level == "FATAL   ") {
         std::exit(1);
     }
+}
+
+void Logger::enable_config_mode() {
+    Logger::is_config_mode = true;
 }

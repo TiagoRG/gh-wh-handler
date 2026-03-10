@@ -4,7 +4,6 @@
 #include <fstream>
 #include <unistd.h>
 
-#include "config/terminal-menu.hpp"
 #include "config/dialog-menu.hpp"
 #include "logger.hpp"
 
@@ -66,18 +65,24 @@ nlohmann::json Config::get_config(std::string config_file_path) {
 }
 
 void Config::open_menu(nlohmann::json config, std::string config_file_path) {
-    Logger::info("[Config] Opening config menu");
-    std::string menu = "";
-    if (std::system("which dialog > /dev/null") == 0) {
-        menu = "dialog";
-    } else {
-        menu = "terminal";
+    Logger::info("[Config] Opening config...");
+
+    const char* visual_env = std::getenv("VISUAL");
+    const char* editor_env = std::getenv("EDITOR");
+
+    std::string default_editor = "vi";
+    if (visual_env) {
+        Logger::info("[Config] VISUAL environment variable found: " + std::string(visual_env));
+        default_editor = visual_env;
+    } else if (editor_env) {
+        Logger::info("[Config] EDITOR environment variable found: " + std::string(editor_env));
+        default_editor = editor_env;
     }
 
-    if (menu == "dialog") {
-        DialogMenu::open_menu(config, config_file_path);
+    if (std::system("which dialog > /dev/null") == 0) {
+        DialogMenu::open_menu(config, config_file_path, default_editor);
     } else {
-        TerminalMenu::open_menu(config, config_file_path);
+        std::string command = default_editor + " " + config_file_path;
     }
 }
 

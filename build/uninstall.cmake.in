@@ -1,22 +1,68 @@
-message(STATUS "[0%] Stopping systemd service...")
-execute_process(COMMAND systemctl stop gh-wh-handler)
+function(ask_user_permission PROMPT_TEXT RESULT_VAR)
+    execute_process(COMMAND printf "${PROMPT_TEXT} [Y/n]: ")
 
-message(STATUS "[15%] Disabling systemd service...")
-execute_process(COMMAND systemctl disable gh-wh-handler)
+    execute_process(
+        COMMAND bash -c "read -n 1 -s -r; echo \"$REPLY\""
+        OUTPUT_VARIABLE USER_INPUT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
-message(STATUS "[30%] Removing service configuration file from systemd directory...")
-file(REMOVE /etc/systemd/system/gh-wh-handler.service)
+    string(TOLOWER "${USER_INPUT}" INPUT_LOWER)
 
-message(STATUS "[45%] Reloading systemd daemon...")
+    if("${INPUT_LOWER}" STREQUAL "y" OR "${INPUT_LOWER}" STREQUAL "")
+        set(${RESULT_VAR} TRUE PARENT_SCOPE)
+        execute_process(COMMAND echo "Y")
+    else()
+        set(${RESULT_VAR} FALSE PARENT_SCOPE)
+        execute_process(COMMAND echo "n")
+    endif()
+endfunction()
+
+if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
+    message(FATAL_ERROR "This script should be run via: cmake -P uninstall.cmake")
+endif()
+
+execute_process(
+    COMMAND id -u
+    OUTPUT_VARIABLE USER_ID
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(NOT USER_ID EQUAL 0)
+    message(FATAL_ERROR "This script must be run as root (UID 0). Current UID: ${USER_ID}")
+endif()
+
+execute_process(COMMAND uname -m OUTPUT_VARIABLE ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "Uninstalling gh-wh-handler [${ARCH}]...")
+
+message(STATUS "Stopping and disabling service...")
+execute_process(COMMAND systemctl stop gh-wh-handler ERROR_QUIET)
+execute_process(COMMAND systemctl disable gh-wh-handler ERROR_QUIET)
+
+message(STATUS "Removing service file...")
+file(REMOVE "/etc/systemd/system/gh-wh-handler.service")
+
+message(STATUS "Reloading systemd...")
 execute_process(COMMAND systemctl daemon-reload)
 
-message(STATUS "[55%] Removing symlink to service executable...")
-execute_process(COMMAND rm /usr/bin/gh-wh-handler)
+message(STATUS "Removing binaries...")
+file(REMOVE "/usr/bin/gh-wh-handler")
+file(REMOVE "/usr/bin/gh-wh-handler.${ARCH}")
 
-message(STATUS "[70%] Removing service executable from service directory...")
-file(REMOVE /services/gh-wh-handler/@EXECUTABLE_NAME@)
+ask_user_permission("Do you want to remove the configuration file?" REMOVE_CONFIG)
+if(REMOVE_CONFIG)
+    message(STATUS "Removing /etc/gh-wh-handler...")
+    file(REMOVE_RECURSE "/etc/gh-wh-handler")
+else()
+    message(STATUS "Skipping configuration removal.")
+endif()
 
-message(STATUS "[85%] Removing all log files...")
-execute_process(COMMAND rm -fr /services/gh-wh-handler/logs)
+ask_user_permission("Do you want to remove the logs?" REMOVE_LOGS)
+if(REMOVE_LOGS)
+    message(STATUS "Removing /var/log/gh-wh-handler...")
+    file(REMOVE_RECURSE "/var/log/gh-wh-handler")
+else()
+    message(STATUS "Skipping log removal.")
+endif()
 
-message(STATUS "[100%] Uninstallation complete!")
+message(STATUS "Uninstallation complete.")

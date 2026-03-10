@@ -47,30 +47,32 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC ncurses dialog)
 #     "-static -static-libgcc -static-libstdc++")
 
 # Install the executable
-set(SERVICE_EXECUTABLE "/services/gh-wh-handler/${EXECUTABLE_NAME}")
-set(SERVICE_CONFIG "/services/gh-wh-handler/config.json")
-set(SERVICE_LOGS "/services/gh-wh-handler/logs")
+set(SERVICE_EXECUTABLE "/usr/bin/${EXECUTABLE_NAME}")
+set(SERVICE_CONFIG "/etc/gh-wh-handler/config.json")
+set(SERVICE_LOGS "/var/log/gh-wh-handler")
 configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/gh-wh-handler.service.in"
     "${CMAKE_CURRENT_BINARY_DIR}/gh-wh-handler.service"
 @ONLY)
-install(CODE "file(MAKE_DIRECTORY /services/gh-wh-handler)")
-install(CODE "file(MAKE_DIRECTORY /services/gh-wh-handler/logs)")
-install(TARGETS ${EXECUTABLE_NAME} DESTINATION /services/gh-wh-handler)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.json"
-    DESTINATION /services/gh-wh-handler)
+install(CODE "file(MAKE_DIRECTORY /etc/gh-wh-handler)")
+install(CODE "file(MAKE_DIRECTORY /var/log/gh-wh-handler)")
+install(TARGETS ${EXECUTABLE_NAME} DESTINATION /usr/bin)
 install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-    /services/gh-wh-handler/${EXECUTABLE_NAME} /usr/bin/gh-wh-handler)")
+    /usr/bin/${EXECUTABLE_NAME} /usr/bin/gh-wh-handler)")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.json"
+    DESTINATION /etc/gh-wh-handler)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gh-wh-handler.service"
     DESTINATION /etc/systemd/system)
 install(CODE "execute_process(COMMAND systemctl daemon-reload)")
 install(CODE "execute_process(COMMAND systemctl enable gh-wh-handler)")
 install(CODE "execute_process(COMMAND systemctl start gh-wh-handler)")
 
-
 if(NOT TARGET uninstall)
     configure_file(
         "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake" IMMEDIATE @ONLY)
-    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake)
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake
+        USES_TERMINAL
+    )
 endif()
